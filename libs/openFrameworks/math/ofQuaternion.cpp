@@ -15,8 +15,8 @@ void ofQuaternion::get(ofMatrix4x4& matrix) const {
 /// (degrees) around the axis (x,y,z)
 void ofQuaternion::makeRotate( float angle, float x, float y, float z ) {
 	angle = ofDegToRad(angle);
-	
-	const float epsilon = 0.0000001f;
+
+	const float epsilon = 1e-7f;
 
 	float length = sqrtf( x * x + y * y + z * z );
 	if (length < epsilon) {
@@ -217,7 +217,7 @@ void ofQuaternion::getRotate( float& angle, float& x, float& y, float& z ) const
 		y = 0.0;
 		z = 1.0;
 	}
-	
+
 	angle = ofRadToDeg(angle);
 }
 
@@ -262,31 +262,51 @@ void ofQuaternion::slerp( float t, const ofQuaternion& from, const ofQuaternion&
 	// so that we get a Vec4
 }
 
-
-// ref at http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm
+// ref at http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm // doesn't work. sloppily/quickly using method from wikipedia http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles with a few checks
 ofVec3f ofQuaternion::getEuler() const {
-	float test = x()*y() + z()*w();
-	float heading;
-	float attitude;
-	float bank;
-	if (test > 0.499) { // singularity at north pole
+  ofVec3f out;
+  ofMatrix4x4 m;
+  this->get(m);
+  float cbs = m(0,0)*m(0,0) + m(0,1)*m(0,1);
+  if(cbs<std::numeric_limits<float>::min()){
+    out = ofVec3f(0.,m(0,2) < 0. ? .5*M_PI:-.5*M_PI, -atan2(m(1,0),m(1,1)));
+  }else{
+    out.x = atan2(m(1,2),m(2,2));
+    out.y = atan2(-m(0,2),sqrt(cbs));
+    out.z = atan2(m(0,1),m(0,0));
+  }
+  out.x = ofRadToDeg(out.x); out.y = ofRadToDeg(out.y); out.z = ofRadToDeg(out.z);
+  return out;
+  /*
+    float test = x()*y() + z()*w();
+    float heading;
+    float attitude;
+    float bank;
+    if (test > 0.499) { // singularity at north pole
 		heading = 2 * atan2(x(), w());
 		attitude = PI/2;
 		bank = 0;
-	} else if (test < -0.499) { // singularity at south pole
+    } else if (test < -0.499) { // singularity at south pole
 		heading = -2 * atan2(x(), w());
 		attitude = - PI/2;
 		bank = 0;
-	} else {
+    } else {
 		float sqx = x() * x();
 		float sqy = y() * y();
 		float sqz = z() * z();
 		heading = atan2(2.0f * y() * w() - 2.0f * x() * z(), 1.0f - 2.0f*sqy - 2.0f*sqz);
 		attitude = asin(2*test);
 		bank = atan2(2.0f*x() * w() - 2.0f * y() * z(), 1.0f - 2.0f*sqx - 2.0f*sqz);
-	}
-	
-	return ofVec3f(ofRadToDeg(attitude), ofRadToDeg(heading), ofRadToDeg(bank));
+    }
+
+    return ofVec3f(ofRadToDeg(attitude), ofRadToDeg(heading), ofRadToDeg(bank));
+    //*/
+}
+
+//----------------------------------------
+void ofQuaternion::normalize(){
+  float l = length();
+  if(l) *this/=l; else *this = ofQuaternion(1,0,0,0);
 }
 
 #define QX  _v.x

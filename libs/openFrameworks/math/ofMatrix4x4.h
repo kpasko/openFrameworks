@@ -1,11 +1,11 @@
 /*
  *  ofMatrix4x4.h
- *  
+ *
  *  Created by Aaron Meyers on 6/22/09 -- modified by Arturo Castro, Zach Lieberman, Memo Akten
- *  based on code from OSG - 
- *  see OSG license for more details: 
+ *  based on code from OSG -
+ *  see OSG license for more details:
  *  http://www.openscenegraph.org/projects/osg/wiki/Legal
- * 
+ *
  */
 
 #pragma once
@@ -17,7 +17,7 @@
 #include <cmath>
 
 
-#if (_MSC_VER)       
+#if (_MSC_VER)
 		// make microsoft visual studio complain less about double / float conversion and
 		// truncation
 		#pragma warning(disable : 4244)
@@ -29,7 +29,7 @@ class ofMatrix4x4 {
 public:
 //	float _mat[4][4];
 	ofVec4f _mat[4];
-	
+
 	//---------------------------------------------
 	// constructors
 	ofMatrix4x4() {
@@ -76,15 +76,25 @@ public:
 	ofVec3f getRowAsVec3f(int i) const {
 		return ofVec3f(_mat[i][0], _mat[i][1], _mat[i][2]);
 	}
-	
+
 	//----------------------------------------
 	ofVec4f getRowAsVec4f(int i) const {
 		return _mat[i];
 	}
-	
+
+	//----------------------------------------
+  ofVec3f getColumnAsVec3f(int i) const{
+    return ofVec3f(_mat[0][i],_mat[1][i],_mat[2][i]);
+  }
+
+	//----------------------------------------
+  ofVec4f getColumnAsVec4f(int i) const{
+    return ofVec4f(_mat[0][i],_mat[1][i],_mat[2][i],_mat[3][i]);
+  }
+
 	friend ostream& operator<<(ostream& os, const ofMatrix4x4& M);
 	friend istream& operator>>(istream& is, ofMatrix4x4& M);
-	
+
 	//---------------------------------------------
 	// check if the matrix is valid
 	bool isValid() const {
@@ -149,6 +159,7 @@ public:
 
 	ofMatrix4x4 getInverse();
 
+  void transpose();
 
 	//---------------------------------------------
 	// init as opengl related matrix for perspective settings
@@ -179,8 +190,8 @@ public:
 	// pointing at (along z axis) 'center'
 	// this is what you use if you want an object to look at a point
 	void makeLookAtMatrix(const ofVec3f& eye, const ofVec3f& center, const ofVec3f& up);
-	
-	
+
+
 	// makeLookAtViewMatrix:
 	// creates *the inverse of* a transformation matrix positioned at 'eye'
 	// pointing at (along z axis) 'center'
@@ -307,12 +318,12 @@ public:
 
 	inline ofVec3f postMult( const ofVec3f& v ) const;
 	inline ofVec3f operator* (const ofVec3f& v) const {
-		return postMult(v);
+		return preMult(v);
 	}
 
 	inline ofVec4f postMult( const ofVec4f& v ) const;
 	inline ofVec4f operator* (const ofVec4f& v) const {
-		return postMult(v);
+		return preMult(v);
 	}
 
 	inline ofVec3f preMult( const ofVec3f& v ) const;
@@ -384,8 +395,8 @@ public:
 		r.makeFromMultiplicationOf(*this, m);
 		return  r;
 	}
-	
-	
+
+
 
 	void preMult( const ofMatrix4x4& );
 
@@ -421,7 +432,7 @@ public:
 // implementation of inline methods
 
 inline bool ofMatrix4x4::isNaN() const {
-	
+
 #if (_MSC_VER) || defined (TARGET_ANDROID)
 #ifndef isnan
 #define isnan(a) ((a) != (a))
@@ -439,7 +450,7 @@ return std::isnan(_mat[0][0]) || std::isnan(_mat[0][1]) || std::isnan(_mat[0][2]
 	       std::isnan(_mat[3][0]) || std::isnan(_mat[3][1]) || std::isnan(_mat[3][2]) || std::isnan(_mat[3][3]);
 
 #endif
-	
+
 }
 
 
@@ -448,48 +459,48 @@ inline ostream& operator<<(ostream& os, const ofMatrix4x4& M) {
 	int w = 8;
 	os	<< setw(w)
 		<< M._mat[0][0] << ", " << setw(w)
+		<< M._mat[1][0] << ", " << setw(w)
+		<< M._mat[2][0] << ", " << setw(w)
+		<< M._mat[3][0] << std::endl;
+
+	os	<< setw(w)
 		<< M._mat[0][1] << ", " << setw(w)
-		<< M._mat[0][2] << ", " << setw(w) 
-		<< M._mat[0][3] << std::endl;
-		
-	os	<< setw(w)
-		<< M._mat[1][0] << ", " << setw(w) 
 		<< M._mat[1][1] << ", " << setw(w)
-		<< M._mat[1][2] << ", " << setw(w) 
-		<< M._mat[1][3] << std::endl;
-	
-	os	<< setw(w)
-		<< M._mat[2][0] << ", " << setw(w) 
 		<< M._mat[2][1] << ", " << setw(w)
-		<< M._mat[2][2] << ", " << setw(w) 
-		<< M._mat[2][3] << std::endl;
-	
+		<< M._mat[3][1] << std::endl;
+
 	os	<< setw(w)
-		<< M._mat[3][0] << ", " << setw(w) 
-		<< M._mat[3][1] << ", " << setw(w)
-		<< M._mat[3][2] << ", " << setw(w) 
+		<< M._mat[0][2] << ", " << setw(w)
+		<< M._mat[1][2] << ", " << setw(w)
+		<< M._mat[2][2] << ", " << setw(w)
+		<< M._mat[3][2] << std::endl;
+
+	os	<< setw(w)
+		<< M._mat[0][3] << ", " << setw(w)
+		<< M._mat[1][3] << ", " << setw(w)
+		<< M._mat[2][3] << ", " << setw(w)
 		<< M._mat[3][3];
-	
+
 	return os;
 }
 
 inline istream& operator>>(istream& is, ofMatrix4x4& M) {
-	is >> M._mat[0][0]; is.ignore(2); 
+	is >> M._mat[0][0]; is.ignore(2);
 	is >> M._mat[0][1]; is.ignore(2);
 	is >> M._mat[0][2]; is.ignore(2);
 	is >> M._mat[0][3]; is.ignore(1);
-	
-	is >> M._mat[1][0]; is.ignore(2); 
+
+	is >> M._mat[1][0]; is.ignore(2);
 	is >> M._mat[1][1]; is.ignore(2);
 	is >> M._mat[1][2]; is.ignore(2);
 	is >> M._mat[1][3]; is.ignore(1);
-	
-	is >> M._mat[1][0]; is.ignore(2); 
+
+	is >> M._mat[1][0]; is.ignore(2);
 	is >> M._mat[1][1]; is.ignore(2);
 	is >> M._mat[1][2]; is.ignore(2);
 	is >> M._mat[1][3]; is.ignore(1);
-	
-	is >> M._mat[1][0]; is.ignore(2); 
+
+	is >> M._mat[1][0]; is.ignore(2);
 	is >> M._mat[1][1]; is.ignore(2);
 	is >> M._mat[1][2]; is.ignore(2);
 	is >> M._mat[1][3];
@@ -650,6 +661,7 @@ inline ofMatrix4x4 ofMatrix4x4::newLookAtMatrix(const ofVec3f& eye, const ofVec3
 	return m;
 }
 
+//for ofVec3f pre/post mult ops, since we have no w coordinate, we assume w coordinate of 1., and we similarly assume that we want to divide by the resulting homogeneous coordinate before returning; why do we do this? unsure...perhaps as a nod to perspective division? http://www.songho.ca/opengl/gl_transform.html
 inline ofVec3f ofMatrix4x4::postMult( const ofVec3f& v ) const {
 	float d = 1.0f / (_mat[3][0] * v.x + _mat[3][1] * v.y + _mat[3][2] * v.z + _mat[3][3]) ;
 	return ofVec3f( (_mat[0][0]*v.x + _mat[0][1]*v.y + _mat[0][2]*v.z + _mat[0][3])*d,
@@ -864,10 +876,10 @@ inline void ofMatrix4x4::postMultRotate(float angle, float x, float y, float z) 
 
 
 inline ofVec3f operator* (const ofVec3f& v, const ofMatrix4x4& m ) {
-	return m.preMult(v);
+	return m.postMult(v);
 }
 inline ofVec4f operator* (const ofVec4f& v, const ofMatrix4x4& m ) {
-	return m.preMult(v);
+	return m.postMult(v);
 }
 
 

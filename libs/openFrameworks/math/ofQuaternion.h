@@ -1,11 +1,11 @@
 /*
  *  ofQuaternion.h
- *  
+ *
  *  Created by Aaron Meyers on 6/22/09 -- modified by Arturo Castro, Zach Lieberman, Memo Akten
- *  based on code from OSG - 
- *  see OSG license for more details: 
+ *  based on code from OSG -
+ *  see OSG license for more details:
  *  http://www.openscenegraph.org/projects/osg/wiki/Legal
- * 
+ *
  */
 
 #pragma once
@@ -14,7 +14,7 @@
 #include "ofVec4f.h"
 #include <cmath>
 
-#if (_MSC_VER)       
+#if (_MSC_VER)
 // make microsoft visual studio complain less about double / float conversion.
 #pragma warning(disable : 4244)
 #endif
@@ -26,55 +26,55 @@ class ofQuaternion {
 public:
     //    float _v[4];
     ofVec4f _v;
-    
+
     inline ofQuaternion();
     inline ofQuaternion(float x, float y, float z, float w);
     inline ofQuaternion(const ofVec4f& v);
     inline ofQuaternion(float angle, const ofVec3f& axis);
     inline ofQuaternion(float angle1, const ofVec3f& axis1, float angle2, const ofVec3f& axis2, float angle3, const ofVec3f& axis3);
-    
+
     inline ofQuaternion& operator =(const ofQuaternion& q);
     inline bool operator ==(const ofQuaternion& q) const;
     inline bool operator !=(const ofQuaternion& q) const;
     //    inline bool operator <(const ofQuaternion& q) const;  // why?
-    
-    inline ostream& operator<<(ostream& os);
-    inline istream& operator>>(istream& is);
-    
+
+    friend ostream& operator<<(ostream& os, const ofQuaternion& q);
+    friend istream& operator>>(istream& is, ofQuaternion& q);
+
     inline ofVec4f asVec4() const;
     inline ofVec3f asVec3() const;
 
-    
+
     inline void set(float x, float y, float z, float w);
     inline void set(const ofVec4f& v);
-    
+
     void set(const ofMatrix4x4& matrix);
     void get(ofMatrix4x4& matrix) const;
-    
+
     inline float& operator [](int i);
     inline float operator [](int i) const;
-    
+
     inline float& x();
     inline float& y();
     inline float& z();
     inline float& w();
-    
+
     inline float x() const;
     inline float y() const;
     inline float z() const;
     inline float w() const;
-    
+
     // return true if the Quat represents a zero rotation, and therefore can be ignored in computations.
     inline bool zeroRotation() const;
-    
-    
-    
+
+
+
     // BASIC ARITHMETIC METHODS
     // Implemented in terms of Vec4s. Some Vec4 operators, e.g.
     // operator* are not appropriate for quaternions (as
     // mathematical objects) so they are implemented differently.
     // Also define methods for conjugate and the multiplicative inverse.
-    
+
     inline const ofQuaternion operator *(float rhs) const;                  // Multiply by scalar
     inline ofQuaternion& operator *=(float rhs);                            // Unary multiply by scalar
     inline const ofQuaternion operator*(const ofQuaternion& rhs) const;     // Binary multiply
@@ -89,50 +89,50 @@ public:
     inline ofQuaternion& operator -=(const ofQuaternion& rhs);              // Unary subtraction
     inline const ofQuaternion operator -() const;                           // returns the negative of the quaternion. calls operator -() on the Vec4 */
     inline ofVec3f operator*(const ofVec3f& v) const;                       // Rotate a vector by this quaternion.
-    
-    
+  //    inline ofQuaternion operator*(const float& a) const;                       // Multiply by a scalar
+
+
     // Length of the quaternion = sqrt(vec . vec)
     inline float length() const;
-    
+
     // Length of the quaternion = vec . vec
     inline float length2() const;
-    
+
     // Conjugate
     inline ofQuaternion conj() const;
-    
+
     // Multiplicative inverse method: q^(-1) = q^*/(q.q^*)
     inline const ofQuaternion inverse() const;
-    
-    
-    
+
+    void normalize();
+
     // METHODS RELATED TO ROTATIONS
     // Set a quaternion which will perform a rotation of an
     // angle around the axis given by the vector(x,y,z).
     // Should be written to also accept an angle and a Vec3?
-    
+
     // Define Spherical Linear interpolation method also
     void makeRotate(float angle, float x, float y, float z);
     void makeRotate(float angle, const ofVec3f& vec);
     void makeRotate(float angle1, const ofVec3f& axis1, float angle2, const ofVec3f& axis2, float angle3, const ofVec3f& axis3);
-    
-    
+
+
     // Make a rotation Quat which will rotate vec1 to vec2.
     // Generally take a dot product to get the angle between these
     // and then use a cross product to get the rotation axis
     // Watch out for the two special cases when the vectors
     // are co-incident or opposite in direction.
     void makeRotate(const ofVec3f& vec1, const ofVec3f& vec2);
-    
+
     void makeRotate_original(const ofVec3f& vec1, const ofVec3f& vec2);
-    
+
     // Return the angle and vector components represented by the quaternion.
     void getRotate(float&angle, float& x, float& y, float& z) const;
     void getRotate(float& angle, ofVec3f& vec) const;
-    
+
     // calculate and return the rotation as euler angles
     ofVec3f getEuler() const;
-    
-    
+
     // Spherical Linear Interpolation.
     // As t goes from 0 to 1, the Quat object goes from "from" to "to".
     void slerp(float t, const ofQuaternion& from, const ofQuaternion& to);
@@ -146,21 +146,21 @@ ofQuaternion::ofQuaternion() {
 
 
 //----------------------------------------
-ostream& ofQuaternion::operator<<(ostream& os) {
-    os << _v.x << ", " << _v.y << ", " << _v.z << ", " << _v.w;
+inline ostream& operator<<(ostream& os, const ofQuaternion& q) {
+    os << q._v.x << ", " << q._v.y << ", " << q._v.z << ", " << q._v.w;
     return os;
 }
 
 
 //----------------------------------------
-istream& ofQuaternion::operator>>(istream& is) {
-    is >> _v.x;
+inline istream& operator>>(istream& is, ofQuaternion& q) {
+    is >> q._v.x;
     is.ignore(2);
-    is >> _v.y;
+    is >> q._v.y;
     is.ignore(2);
-    is >> _v.z;
+    is >> q._v.z;
     is.ignore(2);
-    is >> _v.w;
+    is >> q._v.w;
     return is;
 }
 
@@ -344,11 +344,11 @@ ofQuaternion& ofQuaternion::operator*=(const ofQuaternion& rhs) {
     float y = rhs._v.w * _v.y - rhs._v.x * _v.z + rhs._v.y * _v.w + rhs._v.z * _v.x;
     float z = rhs._v.w * _v.z + rhs._v.x * _v.y - rhs._v.y * _v.x + rhs._v.z * _v.w;
     _v.w = rhs._v.w * _v.w - rhs._v.x * _v.x - rhs._v.y * _v.y - rhs._v.z * _v.z;
-    
+
     _v.z = z;
     _v.y = y;
     _v.x = x;
-    
+
     return (*this); // enable nesting
 }
 
@@ -447,8 +447,6 @@ const ofQuaternion ofQuaternion::inverse() const {
     return conj() / length2();
 }
 
-
-
 //----------------------------------------
 ofVec3f ofQuaternion::operator*(const ofVec3f& v) const {
     // nVidia SDK implementation
@@ -460,3 +458,9 @@ ofVec3f ofQuaternion::operator*(const ofVec3f& v) const {
     uuv *= 2.0f;
     return v + uv + uuv;
 }
+
+/*
+ofQuaternion ofQuaternion::operator*(const float& a) const{
+  return ofQuaternion(_v*a);
+}
+*/

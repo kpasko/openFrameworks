@@ -1,7 +1,3 @@
-
-
-
-
 #include "ofMatrix4x4.h"
 #include <limits>
 #include <stdlib.h>
@@ -262,7 +258,33 @@ ofQuaternion ofMatrix4x4::getRotate() const
 #endif
 
 #ifdef COMPILE_getRotate_Original
+
+/*
+ofQuaternion ofMatrix4x4::getRotate() const{
+  ofQuaternion q;
+  float tr = _mat[0][0] + _mat[1][1] + _mat[2][2]+1.0;
+  int i = 0;
+  if(tr > 1.){
+    float s =.5*sqrt(tr);
+    q.v_.w = s;
+    q.v_.x = (_mat[1][2] - _mat[2][1])*.25/s;
+    q.v_.y = (_mat[2][0] - _mat[0][2])*.25/s;
+    q.v_.z = (_mat[0][1] - _mat[1][0])*.25/s;
+  }else{
+    if (_mat[1][1] > _mat[0][0]) i = 1;
+    if (_mat[2][2] > _mat[i][i]) i = 2;
+  }
+  switch(i){
+  case(0): q.v_.x = .5*sqrt(1+_mat[0][0]-_mat[1][1]-_mat[2][2]); q.v_.y = .25*(_mat[0][1]+_mat[1][0])/q._v.x; q._v.z=.25*(_mat[2][0]+_mat[0][2])/q._v.y; q.w = .25*(_mat[1][2]-_mat[2][1])/q._v.x; break;
+  case(1): break;
+  default: break;
+  }
+
+}
+*/
+
 // Original implementation
+//*
 ofQuaternion ofMatrix4x4::getRotate() const
 {
     ofQuaternion q;
@@ -317,8 +339,10 @@ ofQuaternion ofMatrix4x4::getRotate() const
         QW = tq[3];
     }
 
+    q.normalize();
     return q;
 }
+//*/
 #endif
 
 
@@ -582,8 +606,16 @@ ofMatrix4x4 ofMatrix4x4::getInverse()
     return inverse;
 }
 
+void ofMatrix4x4::transpose(){
+  swap(_mat[1][0],_mat[0][1]);
+  swap(_mat[2][0],_mat[0][2]);
+  swap(_mat[3][0],_mat[0][3]);
 
+  swap(_mat[2][1],_mat[1][2]);
+  swap(_mat[3][1],_mat[1][3]);
 
+  swap(_mat[3][2],_mat[2][3]);
+}
 
 
 /******************************************
@@ -912,7 +944,7 @@ void ofMatrix4x4::makeLookAtViewMatrix(const ofVec3f& eye,const ofVec3f& center,
 	ofVec3f zaxis = (eye - center).normalized();
 	ofVec3f xaxis = up.getCrossed(zaxis).normalized();
 	ofVec3f yaxis = zaxis.getCrossed(xaxis);
-	
+
 	_mat[0].set(xaxis.x, yaxis.x, zaxis.x, 0);
 	_mat[1].set(xaxis.y, yaxis.y, zaxis.y, 0);
 	_mat[2].set(xaxis.z, yaxis.z, zaxis.z, 0);
@@ -924,7 +956,7 @@ void ofMatrix4x4::makeLookAtMatrix(const ofVec3f& eye,const ofVec3f& center,cons
 	ofVec3f zaxis = (eye - center).normalized();
 	ofVec3f xaxis = up.getCrossed(zaxis).normalized();
 	ofVec3f yaxis = zaxis.getCrossed(xaxis);
-	
+
 	_mat[0].set(xaxis.x, xaxis.y, xaxis.z, 0);
 	_mat[1].set(yaxis.x, yaxis.y, yaxis.z, 0);
 	_mat[2].set(zaxis.x, zaxis.y, zaxis.z, 0);
