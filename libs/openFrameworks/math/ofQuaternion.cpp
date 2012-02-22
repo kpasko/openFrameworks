@@ -26,12 +26,13 @@ void ofQuaternion::makeRotate( float angle, float x, float y, float z ) {
 	}
 
 	float inversenorm  = 1.0f / length;
-	float coshalfangle = cosf( 0.5f * angle );
-	float sinhalfangle = sinf( 0.5f * angle );
+  float half = .5f * angle;
+	float coshalfangle = cos(half);
+	float sinhalfangle = sin(half);
 
-	_v.x = x * sinhalfangle * inversenorm;
-	_v.y = y * sinhalfangle * inversenorm;
-	_v.z = z * sinhalfangle * inversenorm;
+	_v.x = sinhalfangle * x * inversenorm;
+	_v.y = sinhalfangle * y * inversenorm;
+	_v.z = sinhalfangle * z * inversenorm;
 	_v.w = coshalfangle;
 }
 

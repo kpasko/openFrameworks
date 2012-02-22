@@ -160,6 +160,7 @@ public:
 	ofMatrix4x4 getInverse();
 
   void transpose();
+  ofMatrix4x4 getTranspose();
 
 	//---------------------------------------------
 	// init as opengl related matrix for perspective settings
@@ -748,6 +749,10 @@ inline void ofMatrix4x4::postMultTranslate( float x, float y, float z) {
 }
 
 inline void ofMatrix4x4::preMultScale( const ofVec3f& v ) {
+	_mat[0] *= v.getPtr()[0];
+	_mat[1] *= v.getPtr()[1];
+	_mat[2] *= v.getPtr()[2];
+  /*
 	_mat[0][0] *= v.getPtr()[0];
 	_mat[0][1] *= v.getPtr()[0];
 	_mat[0][2] *= v.getPtr()[0];
@@ -760,6 +765,7 @@ inline void ofMatrix4x4::preMultScale( const ofVec3f& v ) {
 	_mat[2][1] *= v.getPtr()[2];
 	_mat[2][2] *= v.getPtr()[2];
 	_mat[2][3] *= v.getPtr()[2];
+  */
 }
 
 inline void ofMatrix4x4::postMultScale( const ofVec3f& v ) {
@@ -826,7 +832,7 @@ inline void ofMatrix4x4::glTranslate( const ofVec3f& v ){
 }
 
 inline void ofMatrix4x4::glScale(float x, float y, float z){
-	preMultScale(ofVec3f(x,y,z));
+  preMultScale(ofVec3f(x,y,z));
 }
 
 inline void ofMatrix4x4::glScale( const ofVec3f& v ){

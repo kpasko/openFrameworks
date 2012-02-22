@@ -259,35 +259,13 @@ ofQuaternion ofMatrix4x4::getRotate() const
 
 #ifdef COMPILE_getRotate_Original
 
-/*
-ofQuaternion ofMatrix4x4::getRotate() const{
-  ofQuaternion q;
-  float tr = _mat[0][0] + _mat[1][1] + _mat[2][2]+1.0;
-  int i = 0;
-  if(tr > 1.){
-    float s =.5*sqrt(tr);
-    q.v_.w = s;
-    q.v_.x = (_mat[1][2] - _mat[2][1])*.25/s;
-    q.v_.y = (_mat[2][0] - _mat[0][2])*.25/s;
-    q.v_.z = (_mat[0][1] - _mat[1][0])*.25/s;
-  }else{
-    if (_mat[1][1] > _mat[0][0]) i = 1;
-    if (_mat[2][2] > _mat[i][i]) i = 2;
-  }
-  switch(i){
-  case(0): q.v_.x = .5*sqrt(1+_mat[0][0]-_mat[1][1]-_mat[2][2]); q.v_.y = .25*(_mat[0][1]+_mat[1][0])/q._v.x; q._v.z=.25*(_mat[2][0]+_mat[0][2])/q._v.y; q.w = .25*(_mat[1][2]-_mat[2][1])/q._v.x; break;
-  case(1): break;
-  default: break;
-  }
-
-}
-*/
-
 // Original implementation
 //*
 ofQuaternion ofMatrix4x4::getRotate() const
 {
     ofQuaternion q;
+
+    //TODO: should likely divide by the scale to get noscaled rotation out; however this doesn't scale well to multiple combined operations in a non-affine world...
 
     // Source: Gamasutra, Rotating Objects Using Quaternions
     //
@@ -617,6 +595,18 @@ void ofMatrix4x4::transpose(){
   swap(_mat[3][2],_mat[2][3]);
 }
 
+ofMatrix4x4 ofMatrix4x4::getTranspose(){
+  ofMatrix4x4 out(*this);
+  swap(out._mat[1][0],out._mat[0][1]);
+  swap(out._mat[2][0],out._mat[0][2]);
+  swap(out._mat[3][0],out._mat[0][3]);
+
+  swap(out._mat[2][1],out._mat[1][2]);
+  swap(out._mat[3][1],out._mat[1][3]);
+
+  swap(out._mat[3][2],out._mat[2][3]);
+  return out;
+}
 
 /******************************************
  Matrix inversion technique:

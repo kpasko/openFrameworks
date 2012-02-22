@@ -3,7 +3,7 @@
 #include "ofMath.h"
 #include "ofLog.h"
 
-ofNode::ofNode() : 
+ofNode::ofNode() :
 	parent(NULL) {
 	setPosition(ofVec3f(0, 0, 0));
 	setOrientation(ofVec3f(0, 0, 0));
@@ -33,7 +33,7 @@ void ofNode::setTransformMatrix(const ofMatrix4x4 &m44) {
 
 	ofQuaternion so;
 	localTransformMatrix.decompose(position, orientation, scale, so);
-	
+
 	onPositionChanged();
 	onOrientationChanged();
 	onScaleChanged();
@@ -87,24 +87,21 @@ float ofNode::getY() const {
 	return position.y;
 }
 
-
 //----------------------------------------
 float ofNode::getZ() const {
 	return position.z;
 }
 
-
 //----------------------------------------
 void ofNode::setOrientation(const ofQuaternion& q) {
 	orientation = q;
 	createMatrix();
-	onOrientationChanged();
+  onOrientationChanged();
 }
-
 
 //----------------------------------------
 void ofNode::setOrientation(const ofVec3f& eulerAngles) {
-	setOrientation(ofQuaternion(eulerAngles.y, ofVec3f(0, 1, 0), eulerAngles.x, ofVec3f(1, 0, 0), eulerAngles.z, ofVec3f(0, 0, 1)));
+	setOrientation(ofQuaternion(eulerAngles.z, ofVec3f(0, 0, 1), eulerAngles.y, ofVec3f(0, 1, 0), eulerAngles.x, ofVec3f(1, 0, 0)).inverse());
 }
 
 //----------------------------------------
@@ -208,8 +205,8 @@ void ofNode::roll(float degrees) {
 
 //----------------------------------------
 void ofNode::rotate(const ofQuaternion& q) {
-	orientation *= q;
-	createMatrix();
+	orientation *= q.inverse(); // since all of our operations are transposed, we want the inverse (as quat transpose = quat inverse)
+  createMatrix();
 }
 
 //----------------------------------------
@@ -229,7 +226,7 @@ void ofNode::rotateAround(const ofQuaternion& q, const ofVec3f& point) {
 	ofMatrix4x4 m = getLocalTransformMatrix();
 	//	m.setTranslation(point);
 	//	m.rotate(q);
-	
+
 	onOrientationChanged();
 	onPositionChanged();
 }
@@ -248,12 +245,12 @@ void ofNode::lookAt(const ofVec3f& lookAtPosition, ofVec3f upVector) {
 	ofVec3f zaxis = (getGlobalPosition() - lookAtPosition).normalized();
 	ofVec3f xaxis = upVector.getCrossed(zaxis).normalized();
 	ofVec3f yaxis = zaxis.getCrossed(xaxis);
-	
+
 	ofMatrix4x4 m;
 	m._mat[0].set(xaxis.x, xaxis.y, xaxis.z, 0);
 	m._mat[1].set(yaxis.x, yaxis.y, yaxis.z, 0);
 	m._mat[2].set(zaxis.x, zaxis.y, zaxis.z, 0);
-	
+
 	setGlobalOrientation(m.getRotate());
 }
 
@@ -335,7 +332,7 @@ ofQuaternion ofNode::getGlobalOrientation() const {
 
 //----------------------------------------
 //ofVec3f getGlobalScale() {
-//	return 
+//	return
 //}
 
 
@@ -349,17 +346,17 @@ void ofNode::orbit(float longitude, float latitude, float radius, const ofVec3f&
 	p.rotate(longitude, ofVec3f(0, 1, 0));
 	p += centerPoint;
 	setPosition(p);
-	
+
 	// find upvector for lookat
 	//	ofVec3f u((p-centerPoint).getCrossed(ofVec3f(0, 0, 1)).getNormalized());
 	//	if(u.lengthSquared() > 0) {	// if it exists
-	//		
+	//
 	//	} else {
 	//		//		u.set(0, <#float _y#>, <#float _z#>)
 	//	}
-	//	
-	//	
-	//	
+	//
+	//
+	//
 	lookAt(centerPoint);//, v - centerPoint);
 }
 
@@ -397,11 +394,11 @@ void ofNode::restoreTransformGL() const {
 //----------------------------------------
 void ofNode::createMatrix() {
 	//if(isMatrixDirty) {
-	//	isMatrixDirty = false;
-	localTransformMatrix.makeScaleMatrix(scale);
-	localTransformMatrix.rotate(orientation);
+	//isMatrixDirty = false;
+  localTransformMatrix.makeScaleMatrix(scale);
+  localTransformMatrix.rotate(orientation.inverse());
 	localTransformMatrix.setTranslation(position);
-	
+
 	if(scale[0]>0) axis[0] = getLocalTransformMatrix().getRowAsVec3f(0)/scale[0];
 	if(scale[1]>0) axis[1] = getLocalTransformMatrix().getRowAsVec3f(1)/scale[1];
 	if(scale[2]>0) axis[2] = getLocalTransformMatrix().getRowAsVec3f(2)/scale[2];
